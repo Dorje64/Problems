@@ -19,13 +19,16 @@ hash_data.each do |key, value|
 
   volume = transpose_values[2].inject(0){|sum, e| sum + e.to_i}
   weightedPrice = value.inject(0){|total, e| (total + e[2].to_i * e[3].to_i)}
-  format_hash[key] = {
-                      symbol: key,
-                      MaxTime: time_diff.max,
-                      volume: volume,
-                      WeightedAveragePrice: weightedPrice/volume,
-                      MaxPrice: transpose_values.last.max
-                     }
-end
 
-puts format_hash
+  CSV.open('output.csv', 'a+') do |csv_data|
+    csv_data << [ key , time_diff.max, volume, weightedPrice/volume, transpose_values.last.max]
+  end
+
+  # format_hash[key] = {
+  #                     symbol: key,
+  #                     MaxTime: time_diff.max,
+  #                     volume: volume,
+  #                     WeightedAveragePrice: weightedPrice/volume,
+  #                     MaxPrice: transpose_values.last.max
+  #                    }
+end

@@ -14,13 +14,16 @@ Find the following on a per symbol basis:
 	Weighted Average Price = ((20 * 18) + (5 * 7)) / (20 + 5) = 15
 
 Output:
+
 Your solution should produce a file called 'output.csv'.
+
 file should be a comma separate file with this format:
-<symbol>,<MaxTimeGap>,<Volume>,<WeightedAveragePrice>,<MaxPrice>
+'<symbol>', <MaxTimeGap>,<Volume>,<WeightedAveragePrice>,<MaxPrice>
 The output should be sorted by symbol ascending ('aaa' should be first).
 Sample Input:
 52924702314,aaa,13,1136
 52924702549,aac,20,477
+
 52925641407,aab,31,907
 52927350412,aab,29,724
 52927783980,aac,21,638
