@@ -1,50 +1,58 @@
 require 'csv'
-require 'pry'
 
 csv = CSV.read('input.csv');
 
-format_hash = {}
 group_data = csv.group_by { |data| data[1] }
 hash_data = Hash[group_data.map{|k,v| [k,v]}].sort
 
-def generate_file(file_name)
-  # File.truncat(file_name)
-  binding.pry
-  format_hash.each do |key ,value|
+def generate_file(file_name, value)
     CSV.open(file_name, 'a+') do |csv_data|
-      csv_data << [value[:key] , value[:MaxTime], value[:volume], value[:WeightedAveragePrice], value[:MaxPrice]]
+      csv_data << [ value[:symbol], value[:MaxTime], value[:volume], value[:WeightedAveragePrice], value[:MaxPrice]]
     end
-  end
 end
 
-hash_data.each do |key, value|
-
-  time_diff = []
-  transpose_values = value.transpose
-  cons_times = transpose_values[0].each_cons(2)
-
-  cons_times.each do |c|
-    time_diff << c.sort.inject(0){ |a, b| b.to_i - a.to_i}
+def max_time_gap(consecutive_pair_times)
+  time_gaps = []
+  consecutive_pair_times.each do |pair_time|
+    time_gaps << pair_time.sort.inject(0){ |first, last| last.to_i - first.to_i}
   end
-
-  volume = transpose_values[2].inject(0){|sum, e| sum + e.to_i}
-  weightedPrice = value.inject(0){|total, e| (total + e[2].to_i * e[3].to_i)}
-
-  format_hash[key] = {
-                      symbol: key,
-                      MaxTime: time_diff.max,
-                      volume: volume,
-                      WeightedAveragePrice: weightedPrice/volume,
-                      MaxPrice: transpose_values.last.max
-                     }
+  time_gaps.max
 end
 
+def volume(transpose_values)
+  transpose_values[2].inject(0){|sum, e| sum + e.to_i}
+end
+
+def weighted_price(value)
+  value.inject(0){|total, e| (total + e[2].to_i * e[3].to_i)}
+end
+
+def process_data(hash_data, format_hash = {})
+    File.delete('output.csv') if File.exists?('output.csv')
+
+    hash_data.each do |key, value|
+      transpose_values = value.transpose
+      consecutive_pair_times = transpose_values[0].each_cons(2)
+
+      format_hash[key] = {
+                          symbol: key,
+                          MaxTime: max_time_gap(consecutive_pair_times),
+                          volume: volume(transpose_values),
+                          WeightedAveragePrice: weighted_price(value)/volume(transpose_values),
+                          MaxPrice: transpose_values.last.max
+                         }
+
+      generate_file('output.csv', format_hash[key])
+  end
+
+  puts "Processed Data are saved in output.csv file"
+end
 
 
 unless File.exists?('output.csv')
-  generate_file('output.csv')
+  process_data(hash_data)
 else
   puts "output.csv is already there in the directory"
   to_replace = gets
-  generate_file('output.csv') if to_replace == 'y'
+  process_data(hash_data) if to_replace == "y\n"
 end
